@@ -30,30 +30,32 @@ int initilization(){
 	fp = fopen("2of12.txt", "r");
 
 	char myWord[30];
-	//create the first node
-	wordList *curr = (wordList*)malloc(sizeof(wordList));
 	fgets(myWord, 30, fp);
-	strcpy(curr -> word, myWord); 
-	curr -> next = NULL;
+	myWord[strcspn(myWord, "\r\n")] = 0;//remove carriage retitn and newline characters
+
+	//create the first node
+	wordList *currentNode = (wordList*)malloc(sizeof(wordList));
+	strcpy(currentNode -> word, myWord); 
+	currentNode -> next = NULL;
 
 	//store head node
-	head = curr;
+	head = currentNode;
 
 	//read dict and add words to list
 	while(fgets(myWord, 30, fp)){
+		myWord[strcspn(myWord, "\r\n")] = 0;//remove carriage retitn and newline characters
 		//create a new node each iteratin
-		wordList *n = (wordList*)malloc(sizeof(wordList));
-		strcpy( n -> word, myWord); 
-		n -> next = NULL;
+		wordList *newNode = (wordList*)malloc(sizeof(wordList));
+		strcpy( newNode -> word, myWord); 
+		newNode -> next = NULL;
 		//make curr node point to out new node
-		curr -> next = n;
+		currentNode -> next = newNode;
 		//make our new node the curr node
-		curr = n;
+		currentNode = newNode;
 		wordCount++;
 	}
 	fclose(fp);
-	 printf("%d\n", wordCount);
-	// printf("%s\n", head -> word);
+	 //printf("%d\n", wordCount);
 	return wordCount;
 }	
 //creates random word to be used
@@ -66,7 +68,7 @@ wordList* getRandomWord(){
 	}
 	while(i < wordCount){
 		if(strlen(temp -> word) > 6){
-			printf("%s", temp -> word);
+			// printf("%s", temp -> word);
 			return temp;
 		}else{
 			temp = temp -> next;
@@ -80,7 +82,6 @@ wordList* getRandomWord(){
 void displayWorld(){
 	printf("--------\n");
 }
-
 //used to get users word guess
 void acceptInput(){
 	char guess[100];// variable where guess will be stored
@@ -117,7 +118,7 @@ void teardown(){
 //takes a word and an array for 26 letter in alphabet
 void getLetterDistribution(char* word, int* usedLetters){
 	for(int i =0; i<strlen(word); i++){
-		usedLetters[word[i] - 'A'] +=1;//using ascii characters, will increment the correspoonding positoin of letter
+		usedLetters[word[i] - 'a'] +=1;//using ascii characters, will increment the correspoonding positoin of letter
 	}
 }
 
@@ -140,35 +141,42 @@ bool compareCounts(char* dist1, char* dist2){
 }
 
 //adds all valid words to linked list
-void findWords(char masterWord[30]){
+void findWords(char *masterWord){
 	wordList *temp = head;
 	//create the first node
-	gameList *curr;
+	gameList *currentNode = NULL;
 	for(int i =0; i < wordCount; i++){
 		if(compareCounts(masterWord, temp -> word)){
-			gameList *n = (gameList*)malloc(sizeof(gameList));
-			strcpy(n -> validWord, temp -> word);
-			n -> next = NULL;
-			//make curr node point to out new node
-			curr = n;
+			gameList *newNode = (gameList*)malloc(sizeof(gameList));
+			strcpy(newNode -> validWord, temp -> word);
+			newNode -> next = NULL;
+			if(currentNode != NULL){
+				currentNode -> next = newNode;
+				currentNode = newNode;	//make curr node point to out new node
+			}else{//if first node
+				currentNode = newNode;
+				gameListHead = currentNode;
+			}
 		}
 		temp = temp -> next;
 	}
-	gameList *tmp = gameListHead;
-	int c =0;
-	while(tmp != NULL){
-		c++;
-		tmp = tmp -> next;
-	}
-	printf("%d\n", c);
+	// printf("%s\n", gameListHead -> validWord);
+	// gameList *tmp = gameListHead;
+	// int c =0;
+	// while(tmp != NULL){
+	// 	c++;
+	// 	tmp = tmp -> next;
+	// }
+	// printf("%d\n", c);
 }
 
 int main(int argc, char **argv){
-     initilization();
-     wordList *w = getRandomWord();
-     findWords(w -> word);
-	 gameLoop();
-	 teardown();
+    initilization();  
+    //wordList *w = getRandomWord();
+    // printf("%s\n", w -> word);
+    //findWords(w -> word);
+	gameLoop();
+	teardown();
 
 	return 0;
 }
