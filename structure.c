@@ -12,7 +12,7 @@ struct wordListNode {
 	struct wordListNode *next;
 };
 typedef struct wordListNode wordList;
-wordList *head;
+wordList *head;//head of dictionary
 
 //linked list to store all acceptable guesses
 struct gameListNode{
@@ -21,7 +21,33 @@ struct gameListNode{
 	struct gameListNode *next;
 };
 typedef struct gameListNode gameList;
-gameList *gameListHead;
+gameList *gameListHead;//head of valid words
+
+wordList *master;//masterword for game
+
+//clear memory of game list
+void cleanUpGameListNodes(){
+	gameList *current = gameListHead;
+	gameList *nextNode;
+	while (current != NULL) {
+        nextNode = current->next; // save the next node
+        free(current->validWord); 
+        free(current);           
+        current = nextNode;     
+    }
+}
+
+//clear memory of word List
+void cleanUpWordListNodes(){
+	wordList *current = head;
+	wordList *nextNode;
+	while (current != NULL) {
+        nextNode = current->next; // save the next node
+        free(current->word); 
+        free(current);           
+        current = nextNode;     
+    }
+}
 //used to load dictionary into memory
 int initilization(){
 	srand(time(NULL));//seed random generator
@@ -58,6 +84,7 @@ int initilization(){
 	 //printf("%d\n", wordCount);
 	return wordCount;
 }	
+
 //creates random word to be used
 wordList* getRandomWord(){
 	int randomWord = rand() % wordCount;
@@ -76,21 +103,45 @@ wordList* getRandomWord(){
 	}
 	printf("no suitable word found");
 }
-
+ 
 
 //used to print puzzle
 void displayWorld(){
-	printf("--------\n");
+	for(int i =0; i< strlen(master->word); i++){//print the word bank
+	printf("%c ", toupper(master->word[i]));
+	}
+	printf("\n-------------------------------\n\n");
+	//print status of words
+	gameList *current = gameListHead;
+	while(current != NULL){
+		if(current ->found == false){
+			for (int i = 0; i < strlen(current->validWord); i++) {
+            	printf("- ");
+        		}
+        		printf("\n");
+   		}
+   		else{
+   			printf("FOUND : %s\n", current -> validWord);
+   		}
+        current = current->next;
+    }
 }
 //used to get users word guess
 void acceptInput(){
 	char guess[100];// variable where guess will be stored
 
-	printf("Enter a guess:\n");
+	printf("Enter a guess: ");
 	fgets(guess, sizeof(guess), stdin);
-
 	guess[strcspn(guess, "\r\n")] = 0;//remove carriage retitn and newline characters
 
+	gameList *current = gameListHead;//change stauts to found if word is in list
+	while(current != NULL){
+		if(strcmp(guess, current->validWord) == 0){
+			current->found = true;
+			break;//VALID????
+		}
+		current = current->next;
+	}
 	for(int i =0; i<strlen(guess); i++){//convert each character to uppercase
 		guess[i] = toupper(guess[i]);
 	}
@@ -98,7 +149,15 @@ void acceptInput(){
 }
 
 bool isDone(){
-	return true;
+	gameList *current = gameListHead;
+	while(current != NULL){
+		if(current->found == false){
+			return false;
+		}
+		current = current->next;
+	}
+	return true;//all words found
+	cleanUpGameListNodes();
 }
 
 //used to loop game
@@ -112,6 +171,7 @@ void gameLoop(){
 
 void teardown(){
 	printf("All Done\n");
+	cleanUpWordListNodes();
 }
 
 //used to count the number of times each letter appears in word
@@ -150,6 +210,7 @@ void findWords(char *masterWord){
 			gameList *newNode = (gameList*)malloc(sizeof(gameList));
 			strcpy(newNode -> validWord, temp -> word);
 			newNode -> next = NULL;
+			newNode -> found = false;
 			if(currentNode != NULL){
 				currentNode -> next = newNode;
 				currentNode = newNode;	//make curr node point to out new node
@@ -170,11 +231,17 @@ void findWords(char *masterWord){
 	// printf("%d\n", c);
 }
 
+//compare function for qsort
+int compare(const void *a, const void *b) {
+    return *(char *)a - *(char *)b;
+}
+
 int main(int argc, char **argv){
     initilization();  
-    //wordList *w = getRandomWord();
-    // printf("%s\n", w -> word);
-    //findWords(w -> word);
+     master = getRandomWord();
+     findWords(master -> word);
+     qsort(master->word, strlen(master->word), sizeof(char), compare);
+     //printf("%s\n", master -> word);
 	gameLoop();
 	teardown();
 
