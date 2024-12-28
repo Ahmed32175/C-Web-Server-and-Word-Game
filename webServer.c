@@ -62,7 +62,7 @@ int initilization(){
 	srand(time(NULL));//seed random generator
 
 	FILE *fp;
-	fp = fopen("2of13.txt", "r");
+	fp = fopen("dictionary.txt", "r");
 
 	char myWord[30];
 	fgets(myWord, 30, fp);
