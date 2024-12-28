@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-int wordCount =0;
+int wordCount = 0;
 //linked list to store words
 struct wordListNode {
 	char word[30];
@@ -31,7 +31,6 @@ void cleanUpGameListNodes(){
 	gameList *nextNode;
 	while (current != NULL) {
         nextNode = current->next; // save the next node
-        free(current->validWord); 
         free(current);           
         current = nextNode;     
     }
@@ -43,7 +42,6 @@ void cleanUpWordListNodes(){
 	wordList *nextNode;
 	while (current != NULL) {
         nextNode = current->next; // save the next node
-        free(current->word); 
         free(current);           
         current = nextNode;     
     }
@@ -53,7 +51,7 @@ int initilization(){
 	srand(time(NULL));//seed random generator
 
 	FILE *fp;
-	fp = fopen("2of12.txt", "r");
+	fp = fopen("2of14.txt", "r");
 
 	char myWord[30];
 	fgets(myWord, 30, fp);
@@ -93,7 +91,7 @@ wordList* getRandomWord(){
 	for(i =0; i < randomWord; i++){
 		temp = temp -> next;
 	}
-	while(i < wordCount){
+	while(i < wordCount-1){
 		if(strlen(temp -> word) > 6){
 			// printf("%s", temp -> word);
 			return temp;
@@ -138,7 +136,7 @@ void acceptInput(){
 	while(current != NULL){
 		if(strcmp(guess, current->validWord) == 0){
 			current->found = true;
-			break;//VALID????
+			break;//dont need to check rest if word found
 		}
 		current = current->next;
 	}
@@ -156,8 +154,9 @@ bool isDone(){
 		}
 		current = current->next;
 	}
+	cleanUpGameListNodes();//free current game
 	return true;//all words found
-	cleanUpGameListNodes();
+	
 }
 
 //used to loop game
@@ -170,7 +169,9 @@ void gameLoop(){
 }
 
 void teardown(){
-	printf("All Done\n");
+	printf("\n--------\n");
+	printf("CONGRATULATIONS!\nAll DONE!");
+	printf("\n--------\n");
 	cleanUpWordListNodes();
 }
 
